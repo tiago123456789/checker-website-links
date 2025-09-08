@@ -14,4 +14,4 @@ jobs:
       - name: Build
         run: |
           make build
-          ./checker-website-links -api-key {{ secrets.API_KEY }} -link https://www.firecrawl.dev/
+          ./checker-website-links -api-key {{ secrets.API_KEY }} -link "https://www.firecrawl.dev/""
