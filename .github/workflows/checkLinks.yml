@@ -15,3 +15,4 @@ jobs:
         run: |
           make build
           ./checker-website-links -api-key '{{ secrets.API_KEY }}' -link 'https://www.firecrawl.dev/'
+          cat output.json
