@@ -212,5 +212,23 @@ func (c *CheckerLink) Run(disableCache bool, timeout int) ([]CheckResult, []Chec
 
 	c.generateOutputFile(output)
 
+	if len(linksOkSpendMoreThanMaxTime) > 0 || len(linksErrorSpendMoreThanMaxTime) > 0 {
+		linksSpendMoreThanMaxTimeString := ""
+		for _, link := range linksOkSpendMoreThanMaxTime {
+			linksSpendMoreThanMaxTimeString += fmt.Sprintf("Url: %s | Status: %d | Time duration: %d ms\n", link.Url, link.Status, link.TimeDuration)
+		}
+
+		for _, link := range linksErrorSpendMoreThanMaxTime {
+			linksSpendMoreThanMaxTimeString += fmt.Sprintf("Url: %s | Status: %d | Time duration: %d ms\n", link.Url, link.Status, link.TimeDuration)
+		}
+
+		fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+		fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+		fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+
+		fmt.Println("Links spend more than max time accepted per request:\n" + linksSpendMoreThanMaxTimeString)
+		os.Exit(1)
+	}
+
 	return linksOk, linksError
 }
