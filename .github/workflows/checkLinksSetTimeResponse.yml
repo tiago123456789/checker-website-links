@@ -1,0 +1,24 @@
+name: Check links and check time spend to receive response
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+      - name: Build
+        run: |
+          make build
+          mkdir -p ./app
+          cd ./app
+          wget https://github.com/tiago123456789/checker-website-links/archive/master.zip
+          unzip master.zip
+          cd checker-website-links-master
+          ./checker-website-links -api-key '${{ secrets.API_KEY }}' \
+          -link https://www.firecrawl.dev/ -max-time-ms-accepted 2000
+          cat output.json
