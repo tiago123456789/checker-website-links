@@ -1,9 +1,10 @@
 package checkerLinks
 
 type Payload struct {
-	Url     string `json:"url"`
-	Sitemap string `json:"sitemap"`
-	Limit   int    `json:"limit"`
+	Url      string   `json:"url"`
+	Sitemap  string   `json:"sitemap"`
+	Limit    int      `json:"limit"`
+	Location Location `json:"location"`
 }
 
 type Link struct {
@@ -21,4 +22,9 @@ type CheckResult struct {
 	Url          string `json:"url"`
 	Status       int    `json:"status"`
 	TimeDuration int64  `json:"time_duration_ms"`
+}
+
+type Location struct {
+	Country  string `json:"country"`
+	Language string `json:"language"`
 }

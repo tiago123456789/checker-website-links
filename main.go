@@ -16,6 +16,9 @@ func main() {
 	timeout := flag.Int("timeout", 5, "Timeout (optional)")
 	filenameOutput := flag.String("output", "output.json", "Output file (optional)")
 	maxTimeMsAcceptedPerRequest := flag.Int("max-time-ms-accepted", 5000, "Max time ms accepted (optional)")
+	country := flag.String("country", "", "Country (optional)")
+	language := flag.String("language", "", "Language (optional)")
+
 	flag.Parse()
 
 	if *apiKey == "" {
@@ -30,12 +33,22 @@ func main() {
 		os.Exit(1)
 	}
 
+	if (*country != "" && *language == "") || (*country == "" && *language != "") {
+		fmt.Println("Error: if provide -country or -language, both are required")
+		flag.Usage()
+		os.Exit(1)
+	}
+
 	checkerLinks := checkerLinks.NewCheckerLink(
 		*linkToCheck,
 		*apiKey,
 		*limitLinks,
 		*filenameOutput,
 		*maxTimeMsAcceptedPerRequest,
+		checkerLinks.Location{
+			Country:  *country,
+			Language: *language,
+		},
 	)
 
 	checkerLinks.Run(*disableCache, *timeout)

@@ -21,6 +21,7 @@ type CheckerLink struct {
 	links                       []Link
 	filename                    string
 	maxTimeMsAcceptedPerRequest int
+	location                    Location
 }
 
 func NewCheckerLink(
@@ -29,6 +30,7 @@ func NewCheckerLink(
 	limit int,
 	filename string,
 	maxTimeMsAcceptedPerRequest int,
+	location Location,
 ) *CheckerLink {
 	return &CheckerLink{
 		baseLink:                    baseLink,
@@ -36,6 +38,7 @@ func NewCheckerLink(
 		limit:                       limit,
 		filename:                    filename,
 		maxTimeMsAcceptedPerRequest: maxTimeMsAcceptedPerRequest,
+		location:                    location,
 	}
 }
 
@@ -44,6 +47,10 @@ func (c *CheckerLink) getLinks() []Link {
 		Url:     c.baseLink,
 		Sitemap: "include",
 		Limit:   c.limit,
+	}
+
+	if c.location.Country != "" || c.location.Language != "" {
+		payload.Location = c.location
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -160,7 +167,7 @@ func (c *CheckerLink) checkTimeSpendToReceiveResponse(
 
 func (c *CheckerLink) Run(disableCache bool, timeout int) ([]CheckResult, []CheckResult) {
 	links := c.getLinks()
-	concurrency := make(chan struct{}, 5)
+	concurrency := make(chan struct{}, 10)
 
 	wg := sync.WaitGroup{}
 	var linksOk []CheckResult
