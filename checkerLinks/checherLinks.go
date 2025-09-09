@@ -166,18 +166,26 @@ func (c *CheckerLink) Run(disableCache bool, timeout int) ([]CheckResult, []Chec
 	var linksOk []CheckResult
 	var linksError []CheckResult
 
+	var lockCounter sync.Mutex
+
+	totalLinks := len(links)
+	totalCheckedLinks := 0
+
 	for _, link := range links {
 		wg.Add(1)
 		concurrency <- struct{}{}
 		go func(link Link) {
 			defer wg.Done()
-			fmt.Println("Checking link: ", link.Url)
 			result := c.checkLinks(link, disableCache, timeout)
 			if result.Status == http.StatusOK {
 				linksOk = append(linksOk, result)
 			} else {
 				linksError = append(linksError, result)
 			}
+			lockCounter.Lock()
+			totalCheckedLinks++
+			lockCounter.Unlock()
+			fmt.Printf("Checked the link: %s total checked links: %d/%d\n", link.Url, totalCheckedLinks, totalLinks)
 			<-concurrency
 		}(link)
 	}
