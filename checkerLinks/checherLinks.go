@@ -12,16 +12,19 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/tiago123456789/checker-website-links/types"
 )
 
 type CheckerLink struct {
 	baseLink                    string
 	apiKey                      string
 	limit                       int
-	links                       []Link
+	links                       []types.Link
 	filename                    string
 	maxTimeMsAcceptedPerRequest int
-	location                    Location
+	location                    types.Location
+	output                      types.Output
 }
 
 func NewCheckerLink(
@@ -30,7 +33,8 @@ func NewCheckerLink(
 	limit int,
 	filename string,
 	maxTimeMsAcceptedPerRequest int,
-	location Location,
+	location types.Location,
+	output types.Output,
 ) *CheckerLink {
 	return &CheckerLink{
 		baseLink:                    baseLink,
@@ -39,11 +43,12 @@ func NewCheckerLink(
 		filename:                    filename,
 		maxTimeMsAcceptedPerRequest: maxTimeMsAcceptedPerRequest,
 		location:                    location,
+		output:                      output,
 	}
 }
 
-func (c *CheckerLink) getLinks() []Link {
-	payload := Payload{
+func (c *CheckerLink) getLinks() []types.Link {
+	payload := types.Payload{
 		Url:     c.baseLink,
 		Sitemap: "include",
 		Limit:   c.limit,
@@ -76,7 +81,7 @@ func (c *CheckerLink) getLinks() []Link {
 		return nil
 	}
 
-	var response Response
+	var response types.Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		fmt.Println("Error unmarshalling response body:", err)
@@ -86,9 +91,9 @@ func (c *CheckerLink) getLinks() []Link {
 	return response.Links
 }
 
-func (c *CheckerLink) checkLinks(link Link, disableCache bool, timeout int) CheckResult {
+func (c *CheckerLink) checkLinks(link types.Link, disableCache bool, timeout int) types.CheckResult {
 	if strings.Contains(link.Url, ":443") {
-		return CheckResult{
+		return types.CheckResult{
 			Url:    link.Url,
 			Status: http.StatusOK,
 		}
@@ -109,7 +114,7 @@ func (c *CheckerLink) checkLinks(link Link, disableCache bool, timeout int) Chec
 
 	timeDuration := endAt.Sub(startAt).Milliseconds()
 	if err := ctx.Err(); err != nil {
-		return CheckResult{
+		return types.CheckResult{
 			Url:          link.Url,
 			Status:       http.StatusRequestTimeout,
 			TimeDuration: timeDuration,
@@ -117,7 +122,7 @@ func (c *CheckerLink) checkLinks(link Link, disableCache bool, timeout int) Chec
 	}
 
 	if err != nil {
-		return CheckResult{
+		return types.CheckResult{
 			Url:          link.Url,
 			Status:       http.StatusInternalServerError,
 			TimeDuration: timeDuration,
@@ -126,37 +131,25 @@ func (c *CheckerLink) checkLinks(link Link, disableCache bool, timeout int) Chec
 
 	err = resp.Body.Close()
 	if err != nil {
-		return CheckResult{
+		return types.CheckResult{
 			Url:          link.Url,
 			Status:       resp.StatusCode,
 			TimeDuration: timeDuration,
 		}
 	}
 
-	return CheckResult{
+	return types.CheckResult{
 		Url:          link.Url,
 		Status:       resp.StatusCode,
 		TimeDuration: timeDuration,
 	}
 }
 
-func (c *CheckerLink) generateOutputFile(output map[string]interface{}) {
-
-	jsonData, err := json.Marshal(output)
-	if err != nil {
-		fmt.Errorf("Error marshalling output: %v", err)
-		return
-	}
-
-	os.WriteFile(c.filename, jsonData, 0644)
-
-}
-
 func (c *CheckerLink) checkTimeSpendToReceiveResponse(
-	links []CheckResult,
+	links []types.CheckResult,
 	maxTimeMsAcceptedPerRequest int,
-) []CheckResult {
-	linksSpendMoreThanMaxTime := []CheckResult{}
+) []types.CheckResult {
+	linksSpendMoreThanMaxTime := []types.CheckResult{}
 	for _, link := range links {
 		if link.TimeDuration > int64(maxTimeMsAcceptedPerRequest) {
 			linksSpendMoreThanMaxTime = append(linksSpendMoreThanMaxTime, link)
@@ -165,13 +158,13 @@ func (c *CheckerLink) checkTimeSpendToReceiveResponse(
 	return linksSpendMoreThanMaxTime
 }
 
-func (c *CheckerLink) Run(disableCache bool, timeout int) ([]CheckResult, []CheckResult) {
+func (c *CheckerLink) Run(disableCache bool, timeout int) ([]types.CheckResult, []types.CheckResult) {
 	links := c.getLinks()
 	concurrency := make(chan struct{}, 10)
 
 	wg := sync.WaitGroup{}
-	var linksOk []CheckResult
-	var linksError []CheckResult
+	var linksOk []types.CheckResult
+	var linksError []types.CheckResult
 
 	var lockCounter sync.Mutex
 
@@ -181,7 +174,7 @@ func (c *CheckerLink) Run(disableCache bool, timeout int) ([]CheckResult, []Chec
 	for _, link := range links {
 		wg.Add(1)
 		concurrency <- struct{}{}
-		go func(link Link) {
+		go func(link types.Link) {
 			defer wg.Done()
 			result := c.checkLinks(link, disableCache, timeout)
 			if result.Status == http.StatusOK {
@@ -210,7 +203,7 @@ func (c *CheckerLink) Run(disableCache bool, timeout int) ([]CheckResult, []Chec
 	output["links_ok_spend_more_than_max_time"] = linksOkSpendMoreThanMaxTime
 	output["links_error_spend_more_than_max_time"] = linksErrorSpendMoreThanMaxTime
 
-	c.generateOutputFile(output)
+	c.output.GenerateOutputFile(c.filename, output)
 
 	if len(linksOkSpendMoreThanMaxTime) > 0 || len(linksErrorSpendMoreThanMaxTime) > 0 {
 		linksSpendMoreThanMaxTimeString := ""

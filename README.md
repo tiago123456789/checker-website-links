@@ -10,7 +10,7 @@ This project is a simple tool to check links of a website.
 - Run the command below:
 ```bash
 
-./checker-website-links -api-key <api-key> -link <link> -limit <limit> -disable-cache <disable-cache> -timeout <timeout> -output <output> -max-time-ms-accepted <max-time-ms-accepted>
+./checker-website-links -api-key <api-key> -link <link> -limit <limit> -disable-cache <disable-cache> -timeout <timeout> -output <output> -max-time-ms-accepted <max-time-ms-accepted> -output-format <output-format>
 
 ```
 
@@ -23,6 +23,9 @@ This project is a simple tool to check links of a website.
 
 - api-key: API key of Firecrawl(https://www.firecrawl.dev/).
 - link: Link of the website to check links. For example: https://www.firecrawl.dev/ or https://www.abacatepay.com/ or https://www.google.com/
+- country: Country of the website to check links. For example: BR or US
+- language: Language of the website to check links. For example: pt or en
+- output-format: Output format of the website to check links. Default: json . The output format can be **json** or **csv**.
 - limit: Limit of links to check. Default: 100
 - disable-cache: Disable cache of the website to check links. Default: false . If true, the website will not use cache to check links, because will add "?v=unix_time_milliseconds" to the link to avoid cache.
 - timeout: Timeout of the website to check links. Default: 5

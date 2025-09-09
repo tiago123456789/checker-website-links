@@ -1,4 +1,4 @@
-package checkerLinks
+package types
 
 type Payload struct {
 	Url      string   `json:"url"`
@@ -27,4 +27,8 @@ type CheckResult struct {
 type Location struct {
 	Country  string `json:"country"`
 	Language string `json:"language"`
+}
+
+type Output interface {
+	GenerateOutputFile(filename string, output map[string]interface{})
 }
