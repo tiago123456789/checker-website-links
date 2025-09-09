@@ -21,7 +21,7 @@ This project is a simple tool to check links of a website.
 
 ## Options
 
-- api-key: API key of Firecrawl.
+- api-key: API key of Firecrawl(https://www.firecrawl.dev/).
 - link: Link of the website to check links. For example: https://www.firecrawl.dev/ or https://www.abacatepay.com/ or https://www.google.com/
 - limit: Limit of links to check. Default: 100
 - disable-cache: Disable cache of the website to check links. Default: false . If true, the website will not use cache to check links, because will add "?v=unix_time_milliseconds" to the link to avoid cache.
@@ -29,3 +29,6 @@ This project is a simple tool to check links of a website.
 - output: Output file of the website to check links. Default: output.json . The file will be saved in the same directory of the tool and contains the links checked.
 - max-time-ms-accepted: Max time accepted of the website to check links. Default: 5000
 
+## Examples:
+
+- Check Github actions workflow on folder .github/workflows to see how to use.
