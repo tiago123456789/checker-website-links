@@ -20,5 +20,6 @@ jobs:
           cd checker-website-links-master
           make build
           ./checker-website-links-linux -api-key '${{ secrets.API_KEY }}' \
-          -link https://www.firecrawl.dev/ -max-time-ms-accepted 2000
+          -link https://www.firecrawl.dev/ -max-time-ms-accepted 500 \
+          -disable-cache true
           cat output.json
